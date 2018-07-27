@@ -21,7 +21,8 @@ module.exports = (settings = {}) => {
   });
 
   settings.ext = settings.ext || '.html';
-  settings.render = settings.render || mustache.render;
+
+  const render = mustache.render;
 
   const _templates = new Promise((resolve, reject) => {
     fs.readdir(settings.templateDir, (err, files) => {
@@ -41,7 +42,20 @@ module.exports = (settings = {}) => {
     });
   });
 
+  const _layout = new Promise((resolve, reject) => {
+    const def = '{{>message}}';
+    if (!settings.layout) {
+      debug('No layout defined. Using default.');
+      return resolve(def);
+    }
+    debug(`Loading layout from ${settings.layout}`);
+    fs.readFile(settings.layout, (err, content) => {
+      return err ? reject(err) : resolve(content.toString());
+    });
+  });
+
   const getTemplates = () => _templates;
+  const getLayout = () => _layout;
 
   const loadTemplate = config => {
     return new Promise((resolve, reject) => {
@@ -72,8 +86,9 @@ module.exports = (settings = {}) => {
         .then(config => {
           return loadTemplate(config);
         })
-        .then(tpl => {
-          return settings.render(tpl, data);
+        .then(message => {
+          return getLayout()
+            .then(layout => render(layout, data, { message }));
         })
         .then(message => {
           return new Promise((resolve, reject) => {
@@ -90,7 +105,7 @@ module.exports = (settings = {}) => {
                 },
                 Subject: {
                   Charset: 'UTF-8',
-                  Data: settings.render(subject, data)
+                  Data: render(subject, data)
                 }
               },
               Source: settings.from
