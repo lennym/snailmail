@@ -42,6 +42,7 @@ mail.send({
 * `region` - AWS region for your SES account
 * `ext` - _(optional)_ - the file extension of your email templates - Default `.html`
 * `layout` - _(optional)_ - the path to a standard layout file to use for your email templates
+* `attachments` - _(optional)_ - a map of files to include as attachments on all emails
 
 ## Message options
 
@@ -49,6 +50,7 @@ mail.send({
 * `template` - the template used to render the message body. Should match the extensionless filename of one of the templates in your template directory
 * `subject` - the subject line of your message. This will also be passed through `mustache.render`, so can contain dynamic content
 * `data` - any dynamic data to be rendered into the subject or body of your message
+* `attachments` - _(optional)_ - a map of files to include as attachments for this email
 
 ## Layouts
 
@@ -75,3 +77,38 @@ const mailer = Mailer({
   // ...
 });
 ```
+
+## Attachments
+
+Attachments should be defined as a map of content ids and filenames.
+
+```js
+const mailer = Mailer({
+  // ...
+  attachments: {
+    myfile: '/path/to/my/file.png',
+    myotherfile: '/path/to/my/other/file.png'
+  }
+});
+```
+
+An attachment included on the options passed to `send` will overwrite a default attachment if it has the same content id.
+
+## Embedded images
+
+Images can be embeded in your emails by giving a `src` attribute of `cid:<attachmentId>`, where the id corresponds to the content id of one of your attachments.
+
+```html
+<img src="cid:header" width="100" height="20" />
+```
+
+```js
+mailer.send({
+  to: 'bob@example.com',
+  subject: 'Important message',
+  attachments: {
+    header: '/path/to/my/file.png'
+  }
+});
+```
+

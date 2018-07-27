@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const debug = require('debug')('snailmail');
+const nodemailer = require('nodemailer');
 const AWS = require('aws-sdk');
 const mustache = require('mustache');
 
@@ -14,11 +15,13 @@ module.exports = (settings = {}) => {
     throw new Error('snailmail: From address must be defined');
   }
 
-  const client = new AWS.SES({
+  const SES = new AWS.SES({
     region: settings.region,
     accessKeyId: settings.key,
     secretAccessKey: settings.secret
   });
+
+  const mailer = nodemailer.createTransport({ SES });
 
   settings.ext = settings.ext || '.html';
 
@@ -75,7 +78,15 @@ module.exports = (settings = {}) => {
   };
 
   return {
-    send: ({ template, data = {}, to, subject = 'No subject' }) => {
+    send: ({ template, data = {}, to, subject = 'No subject', attachments }) => {
+      attachments = Object.assign({}, settings.attachments, attachments);
+      attachments = Object.keys(attachments).map(cid => {
+        return {
+          cid,
+          filename: path.basename(attachments[cid]),
+          path: attachments[cid]
+        }
+      });
       return getTemplates()
         .then(templates => {
           if (!template || !templates[template]) {
@@ -92,23 +103,12 @@ module.exports = (settings = {}) => {
         })
         .then(message => {
           return new Promise((resolve, reject) => {
-            client.sendEmail({
-              Destination: {
-                ToAddresses: [ to ]
-              },
-              Message: {
-                Body: {
-                  Html: {
-                    Charset: 'UTF-8',
-                    Data: message
-                  }
-                },
-                Subject: {
-                  Charset: 'UTF-8',
-                  Data: render(subject, data)
-                }
-              },
-              Source: settings.from
+            mailer.sendMail({
+              to,
+              from: settings.from,
+              subject: render(subject, data),
+              html: message,
+              attachments
             }, (err, response, r) => {
               err ? reject(err) : resolve(response);
             });
