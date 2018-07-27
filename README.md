@@ -5,6 +5,12 @@ Render mustache html templates into SES emails
 ## Usage
 
 ```js
+/**
+./templates/default.html
+
+<p>Hello {{name}}</p>
+**/
+
 const Mailer = require('snailmail');
 
 // configure mailer instance
