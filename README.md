@@ -40,6 +40,7 @@ mail.send({
 * `key` - AWS accessKeyId for your SES account
 * `secret` - AWS secretAccessKey for your SES account
 * `region` - AWS region for your SES account
+* `replyTo` - _(optional)_ - the value of the reply-to header of your email if distinct to the `from` address - Default `undefined`
 * `ext` - _(optional)_ - the file extension of your email templates - Default `.html`
 * `layout` - _(optional)_ - the path to a standard layout file to use for your email templates
 * `attachments` - _(optional)_ - a map of files to include as attachments on all emails

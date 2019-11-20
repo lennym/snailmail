@@ -106,6 +106,7 @@ module.exports = (settings = {}) => {
             mailer.sendMail({
               to,
               from: settings.from,
+              replyTo: settings.replyTo,
               subject: render(subject, data),
               html: message,
               attachments
