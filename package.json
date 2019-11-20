@@ -1,6 +1,6 @@
 {
   "name": "snailmail",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Render templates into SES emails",
   "main": "index.js",
   "scripts": {
