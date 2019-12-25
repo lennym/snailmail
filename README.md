@@ -23,7 +23,7 @@ const mailer = Mailer({
 });
 
 // send an email
-mail.send({
+mailer.send({
   template: 'default'
   to: 'alice@example.com',
   subject: 'Test email',
